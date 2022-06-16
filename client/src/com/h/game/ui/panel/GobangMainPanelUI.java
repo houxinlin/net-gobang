@@ -15,6 +15,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.ImageObserver;
+import java.util.Iterator;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -44,15 +45,11 @@ public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallbac
         this.addMouseMotionListener(gobangPanelMouseEvents);
 
 
-        for (MessageHandler messageHandler : gobangNet.getMessageHandlers()) {
-            if (messageHandler instanceof PieceMessage) {
-                ((PieceMessage) messageHandler).setGobangMainPanelUI(this);
-                return;
-            }
-        }
+        gobangNet.getMessageHandlers().removeIf(messageHandler -> messageHandler instanceof ConsultMessage || messageHandler instanceof PieceMessage);
         gobangNet.getMessageHandlers().add(new ConsultMessage(this));
         gobangNet.getMessageHandlers().add(new PieceMessage(this));
     }
+
 
     public void start(int whoFirst) {
         if (this.state == 1) return;

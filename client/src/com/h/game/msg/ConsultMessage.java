@@ -9,6 +9,10 @@ public class ConsultMessage extends MessageHandler {
         this.gobangMainPanelUI = gobangMainPanelUI;
     }
 
+    public void setGobangMainPanelUI(GobangMainPanelUI gobangMainPanelUI) {
+        this.gobangMainPanelUI = gobangMainPanelUI;
+    }
+
     @Override
     public boolean support(String msg) {
         return msg.startsWith("consult-");

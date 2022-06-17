@@ -21,8 +21,6 @@ public class GobangRoomUI extends BaseGobangUI {
     }
 
     public void clear() {
-//        childPanel.forEach(this::remove);
-//        this.removeAll();
         getContentPane().removeAll();;
     }
 
@@ -32,6 +30,5 @@ public class GobangRoomUI extends BaseGobangUI {
         add(roomPanel);
         childPanel.add(roomPanel);
         SwingUtilities.updateComponentTreeUI(this);
-
     }
 }

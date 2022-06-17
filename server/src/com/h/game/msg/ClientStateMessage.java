@@ -1,6 +1,6 @@
 package com.h.game.msg;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 import com.h.game.room.Room;
 import com.h.game.server.GobangServerSocket;
 
@@ -9,8 +9,10 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class ClientStateMessage extends MessageHandler {
+    private static final Logger log = Logger.getLogger(ClientStateMessage.class.getName());
     private List<Room> rooms = null;
     private static final String ENTER_PREFIX = "EnterRoom";
     private static final String EXIT_PREFIX = "ExitRoom";
@@ -43,7 +45,7 @@ public class ClientStateMessage extends MessageHandler {
         String attachRoomName = (String) (selectionKey).attachment();
         exitRoom(attachRoomName, ((SocketChannel) selectionKey.channel()));
         selectionKey.attach(null);
-
+        log.info("客户端退出房间" + attachRoomName);
     }
 
     /**
@@ -65,6 +67,8 @@ public class ClientStateMessage extends MessageHandler {
 
                     if (room.getSocketChannelA() == socketChannel) room.setSocketChannelA(null);
                     if (room.getSocketChannelB() == socketChannel) room.setSocketChannelB(null);
+
+                    notifyClientRefreshRoomList();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -102,11 +106,12 @@ public class ClientStateMessage extends MessageHandler {
                 notifyClientRefreshRoomList();
             }
         }));
+        log.info("客户端进入房间"+roomName);
     }
 
     private void notifyClientRefreshRoomList() {
         StringBuilder stringBuilder = new StringBuilder();
-        serverSocket.broadcast(stringBuilder.append("rooms").append(JSON.toJSONString(rooms)).toString());
+        serverSocket.broadcast(stringBuilder.append("rooms").append(new Gson().toJson(rooms)).toString());
     }
 
     /**

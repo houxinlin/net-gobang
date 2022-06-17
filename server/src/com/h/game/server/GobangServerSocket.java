@@ -1,6 +1,5 @@
 package com.h.game.server;
 
-import com.alibaba.fastjson.JSON;
 import com.h.game.msg.*;
 import com.h.game.room.Room;
 
@@ -15,9 +14,11 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class GobangServerSocket {
-    private static final int PORT = 4567;
+    private static final Logger log = Logger.getLogger(GobangServerSocket.class.getName());
+    public static final int PORT = 4567;
     private static List<MessageHandler> messageHandlers = new ArrayList<>();
     private List<SocketChannel> clientSockets = new ArrayList<>();
     private ServerSocketChannel serverSocketChannel;
@@ -35,19 +36,20 @@ public class GobangServerSocket {
         }));
     }
 
-    public GobangServerSocket() {
+    public GobangServerSocket(int port) {
         try {
             //创建10个房间
             for (int i = 0; i < 10; i++) rooms.add(new Room((i + 1) + ""));
-            messageHandlers.add(new ClientStateMessage(rooms,this)); //处理客户端进入房间
+            messageHandlers.add(new ClientStateMessage(rooms, this)); //处理客户端进入房间
             messageHandlers.add(new ListRoomMessage(rooms));//处理客户端请求房间列表
             messageHandlers.add(new PieceMessage(rooms)); //处理棋子的信息
             messageHandlers.add(new StateMessage(rooms)); //状态检测
             serverSocketChannel = ServerSocketChannel.open();
             serverSocketChannel.configureBlocking(false);
-            serverSocketChannel.bind(new InetSocketAddress(PORT));
+            serverSocketChannel.bind(new InetSocketAddress(port));
             selector = Selector.open();
             serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+            log.info("服务启动成功，端口:"+port);
             for (; ; ) loop();
         } catch (IOException e) {
             e.printStackTrace();
@@ -59,6 +61,7 @@ public class GobangServerSocket {
         socketChannel.configureBlocking(false);
         socketChannel.register(selector, SelectionKey.OP_READ);
         clientSockets.add(socketChannel);
+        log.info("客户端连接成功");
     }
 
     /**
@@ -71,6 +74,7 @@ public class GobangServerSocket {
         ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
         if (((SocketChannel) selectionKey.channel()).read(byteBuffer) == -1) {
             String roomName = (String) selectionKey.attachment();
+            log.info("客户端断开链接("+roomName+")");
             if (roomName != null)
                 ((ClientStateMessage) messageHandlers.get(0)).exitRoom(roomName, ((SocketChannel) selectionKey.channel()));
             selectionKey.channel().close();

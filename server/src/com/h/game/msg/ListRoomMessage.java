@@ -1,6 +1,6 @@
 package com.h.game.msg;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 import com.h.game.room.Room;
 
 import java.io.IOException;
@@ -27,7 +27,7 @@ public class ListRoomMessage extends MessageHandler {
         SocketChannel socketChannel = ((SocketChannel) selectionKey.channel());
         StringBuilder stringBuffer = new StringBuilder();
         try {
-            socketChannel.write(Charset.defaultCharset().encode(stringBuffer.append("rooms").append(JSON.toJSONString(rooms)).toString()));
+            socketChannel.write(Charset.defaultCharset().encode(stringBuffer.append("rooms").append(new Gson().toJson(rooms)).toString()));
         } catch (IOException e) {
             e.printStackTrace();
         }

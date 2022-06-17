@@ -28,7 +28,7 @@ public class GobangNet extends JFrame {
     protected void connectServer() {
         try {
             if (socketChannel != null) return;
-            socketChannel = SocketChannel.open(new InetSocketAddress("127.0.0.1", 4567));
+            socketChannel = SocketChannel.open(new InetSocketAddress("www.houxinlin.com", 8086));
             System.out.println("服务器链接成功");
             socketChannel.write(Charset.defaultCharset().encode("list"));
             ByteBuffer byteBuffer = ByteBuffer.allocate(1024);

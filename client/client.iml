@@ -8,5 +8,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="fastjson-1.2.76" level="project" />
+    <orderEntry type="library" name="gson-2.9.0" level="project" />
   </component>
 </module>

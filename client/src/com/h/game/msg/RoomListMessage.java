@@ -1,6 +1,8 @@
 package com.h.game.msg;
 
 import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.h.game.room.Room;
 import com.h.game.ui.GobangRoomUI;
 
@@ -22,9 +24,10 @@ public class RoomListMessage extends MessageHandler {
     @Override
     public void handler(String msg, Object... args) {
         if (jFrame != null && jFrame instanceof GobangRoomUI) {
-            List<Room> rooms = JSON.parseArray(msg.substring("rooms".length()), Room.class);
+            ((GobangRoomUI) jFrame).clear();
+            List<Room> rooms = new Gson().fromJson(msg.substring("rooms".length()), new TypeToken<List<Room>>() {}.getType());
             rooms.forEach(room -> {
-                ((GobangRoomUI) jFrame).addRoom(room.getRoomName(),room.getState());
+                ((GobangRoomUI) jFrame).addRoom(room.getRoomName(), room.getState());
             });
         }
     }

@@ -41,7 +41,6 @@ public class GobangNet extends JFrame {
                     if (messageHandler.support(new String(data))) messageHandler.handler(new String(data));
                 }
                 byteBuffer.clear();
-
             }
             System.out.println("链接断开");
         } catch (IOException e) {

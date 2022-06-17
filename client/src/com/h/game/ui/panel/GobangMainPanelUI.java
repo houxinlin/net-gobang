@@ -4,18 +4,15 @@ import com.h.game.GobangNet;
 import com.h.game.event.GobangPanelMouseEvents;
 import com.h.game.event.GobangPanelMoushCallback;
 import com.h.game.msg.ConsultMessage;
+import com.h.game.msg.ExitRoomMessage;
 import com.h.game.msg.Message;
-import com.h.game.msg.MessageHandler;
 import com.h.game.msg.PieceMessage;
-import com.h.game.ui.GobangMainUI;
 import com.h.game.util.GameUtils;
+import sun.font.FontDesignMetrics;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Ellipse2D;
-import java.awt.image.ImageObserver;
-import java.util.Iterator;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -29,12 +26,14 @@ public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallbac
     private final GobangNet gobangNet;
     private volatile int state = 0;
     private final int[][] cellData = new int[CELL_NUMBER + 1][CELL_NUMBER + 1];
-    private int color = 0;
     private boolean canNext = false;
     private int whoFirst = 0;
     private final Image successImage = Toolkit.getDefaultToolkit().getImage(GobangMainPanelUI.class.getResource("/resource/success.png"));
     private final Image failImage = Toolkit.getDefaultToolkit().getImage(GobangMainPanelUI.class.getResource("/resource/fail.png"));
     private volatile int currentImageSize = 0;
+    private volatile boolean drawTip = false;
+    private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
+    private Font tipFont = new Font("宋体", Font.PLAIN, 50);
 
     public GobangMainPanelUI(GobangNet gobangNet) {
         this.gobangNet = gobangNet;
@@ -43,11 +42,10 @@ public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallbac
         GobangPanelMouseEvents gobangPanelMouseEvents = new GobangPanelMouseEvents(this);
         this.addMouseListener(gobangPanelMouseEvents);
         this.addMouseMotionListener(gobangPanelMouseEvents);
-
-
-        gobangNet.getMessageHandlers().removeIf(messageHandler -> messageHandler instanceof ConsultMessage || messageHandler instanceof PieceMessage);
+        gobangNet.getMessageHandlers().removeIf(messageHandler -> messageHandler instanceof ConsultMessage || messageHandler instanceof PieceMessage || messageHandler instanceof ExitRoomMessage);
         gobangNet.getMessageHandlers().add(new ConsultMessage(this));
         gobangNet.getMessageHandlers().add(new PieceMessage(this));
+        gobangNet.getMessageHandlers().add(new ExitRoomMessage(this));
     }
 
 
@@ -56,6 +54,11 @@ public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallbac
         this.state = 1;  //状态为1表示正在游戏中
         this.whoFirst = whoFirst; //0表示先手
         this.canNext = whoFirst == 0; //我是否可以走
+        this.drawTip = true;// 绘制提示
+        this.scheduledThreadPoolExecutor.schedule(() -> {
+            this.drawTip = false;
+            repaint();
+        }, 1, TimeUnit.SECONDS);
         repaint();
     }
 
@@ -67,6 +70,10 @@ public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallbac
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        if (this.state == 2) {
+            again(); //如果游戏结束后还单击布局，则准备下一次对局
+            return;
+        }
         if (!this.canNext) return;
         this.canNext = false;
         mouseCurrentPoint.setLocation(e.getX(), e.getY());
@@ -79,6 +86,26 @@ public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallbac
             startImageAnimation();
         }
         repaint();
+    }
+
+    private void reset() {
+        this.state = 0;
+        this.canNext = false;
+        this.currentImageSize = 0;
+        for (int i = 0; i < CELL_NUMBER + 1; i++) {
+            for (int j = 0; j < CELL_NUMBER + 1; j++) {
+                cellData[i][j] = 0;
+            }
+        }
+        repaint();
+    }
+
+    private void again() {
+        boolean isSuccess = GameUtils.gameOver(this.cellData, this.whoFirst == 0 ? 1 : 2);
+        reset(); //重置数据，布局进入等待对手状态
+        //如果先手输了，切换,赢了颜色不变，同样继续先手
+        gobangNet.sendMessage("again" + ((this.whoFirst == 0 && !isSuccess) ? 1 : 0));
+
     }
 
     /**
@@ -99,16 +126,16 @@ public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallbac
     }
 
     private void startImageAnimation() {
-        System.out.println("开始动画");
         new Thread(() -> {
             while (currentImageSize <= 300) {
                 currentImageSize += 10;
                 try {
                     repaint();
-                    Thread.sleep(5);
+                    Thread.sleep(25);
                 } catch (InterruptedException e2) {
                     e2.printStackTrace();
                 }
+                repaint();
             }
             repaint();
         }).start();
@@ -132,21 +159,29 @@ public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallbac
         drawLayout(g);
         drawState(g);
         if (this.state == 0) return;
-        drawMouseTarget(g);
-        drawPiece(g);
-        drawImage(g);
+        if (this.state != 2) drawMouseTarget(g); //如果游戏没有结束，则绘制鼠标所选位置
+        drawPiece(g);   //绘制棋子
+        drawImage(g);   //绘制胜利或者失败图片
     }
 
-    private void drawImage(Graphics g){
+    private void drawImage(Graphics g) {
         if (this.state == 2) {
             g.drawImage(GameUtils.gameOver(this.cellData, this.whoFirst == 0 ? 1 : 2) ? successImage : failImage, getWidth() / 2 - currentImageSize / 2, getHeight() / 2 - currentImageSize / 2, currentImageSize, currentImageSize, null);
         }
     }
+
     private void drawState(Graphics g) {
         g.setColor(Color.BLACK);
-        g.setFont(new Font("黑体", Font.PLAIN, 30));
-        int fontWidth = 60;
-        if (this.state == 0) g.drawString("等待对手...", getWidth() / 2 - fontWidth / 2, getHeight() / 2);
+        g.setFont(tipFont);
+        if (drawTip && this.whoFirst == 0)
+            g.drawString("先手", getWidth() / 2 - getFontWidth(tipFont, "先手") / 2, getHeight() / 2);
+        if (this.state == 0)
+            g.drawString("等待对手...", getWidth() / 2 - getFontWidth(tipFont, "等待对手...") / 2, getHeight() / 2);
+    }
+
+    private int getFontWidth(Font font, String str) {
+        FontDesignMetrics metrics = FontDesignMetrics.getMetrics(font);
+        return metrics.stringWidth(str);
     }
 
     /**
@@ -215,5 +250,10 @@ public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallbac
         System.out.println();
     }
 
-
+    /**
+     * 对手退出
+     */
+    public void opponentExit() {
+        this.reset();
+    }
 }

@@ -9,7 +9,7 @@ public class Room {
     private SocketChannel socketChannelA;
     @JSONField(serialize = false)
     private SocketChannel socketChannelB;
-    private int state;
+    private int state=0;
     private String roomName;
     private int first = 0;
 

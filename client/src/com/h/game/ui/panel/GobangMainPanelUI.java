@@ -2,7 +2,7 @@ package com.h.game.ui.panel;
 
 import com.h.game.GobangNet;
 import com.h.game.event.GobangPanelMouseEvents;
-import com.h.game.event.GobangPanelMoushCallback;
+import com.h.game.event.GobangPanelMouseCallback;
 import com.h.game.msg.ConsultMessage;
 import com.h.game.msg.ExitRoomMessage;
 import com.h.game.msg.Message;
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 棋盘UI
  */
-public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallback {
+public class GobangMainPanelUI extends JPanel implements GobangPanelMouseCallback {
     public static final int CELL_NUMBER = 18;
     private static final int MARGIN = 20;
     private final Point mouseCurrentPoint = new Point();

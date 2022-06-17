@@ -4,19 +4,19 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class GobangPanelMouseEvents extends MouseAdapter {
-    private final GobangPanelMoushCallback gobangPanelMoushCallback;
+    private final GobangPanelMouseCallback gobangPanelMouseCallback;
 
-    public GobangPanelMouseEvents(GobangPanelMoushCallback gobangPanelMoushCallback) {
-        this.gobangPanelMoushCallback = gobangPanelMoushCallback;
+    public GobangPanelMouseEvents(GobangPanelMouseCallback gobangPanelMouseCallback) {
+        this.gobangPanelMouseCallback = gobangPanelMouseCallback;
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (gobangPanelMoushCallback != null) gobangPanelMoushCallback.mouseReleased(e);
+        if (gobangPanelMouseCallback != null) gobangPanelMouseCallback.mouseReleased(e);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        if (gobangPanelMoushCallback != null) gobangPanelMoushCallback.mouseMoved(e);
+        if (gobangPanelMouseCallback != null) gobangPanelMouseCallback.mouseMoved(e);
     }
 }

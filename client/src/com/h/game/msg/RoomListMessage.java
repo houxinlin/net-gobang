@@ -1,6 +1,5 @@
 package com.h.game.msg;
 
-import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.h.game.room.Room;
@@ -9,6 +8,9 @@ import com.h.game.ui.GobangRoomUI;
 import javax.swing.*;
 import java.util.List;
 
+/**
+ * 房间列表
+ */
 public class RoomListMessage extends MessageHandler {
     private JFrame jFrame;
 

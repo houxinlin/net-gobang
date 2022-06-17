@@ -2,7 +2,6 @@ package com.h.game.event;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 
 public class GobangPanelMouseEvents extends MouseAdapter {
     private final GobangPanelMoushCallback gobangPanelMoushCallback;

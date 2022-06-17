@@ -1,13 +1,10 @@
 package com.h.game.room;
 
-import com.alibaba.fastjson.annotation.JSONField;
 
 import java.nio.channels.SocketChannel;
 
 public class Room {
-    @JSONField(serialize = false)
     private SocketChannel socketChannelA;
-    @JSONField(serialize = false)
     private SocketChannel socketChannelB;
     private int state=0;
     private String roomName;

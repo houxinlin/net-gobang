@@ -6,6 +6,9 @@ import com.h.game.ui.panel.GobangMainPanelUI;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+/**
+ * 棋盘JFrame
+ */
 public class GobangMainUI extends BaseGobangUI {
     private String roomName;
 
@@ -21,6 +24,9 @@ public class GobangMainUI extends BaseGobangUI {
         this.setVisible(true);
         this.getContentPane().add(new GobangMainPanelUI(this));
 
+        /**
+         * 窗口关闭时，向服务器发送退出房间
+         */
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {

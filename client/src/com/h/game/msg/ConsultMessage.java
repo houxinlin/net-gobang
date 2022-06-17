@@ -2,14 +2,13 @@ package com.h.game.msg;
 
 import com.h.game.ui.panel.GobangMainPanelUI;
 
+/**
+ * 协商消息
+ */
 public class ConsultMessage extends MessageHandler {
     private GobangMainPanelUI gobangMainPanelUI;
 
     public ConsultMessage(GobangMainPanelUI gobangMainPanelUI) {
-        this.gobangMainPanelUI = gobangMainPanelUI;
-    }
-
-    public void setGobangMainPanelUI(GobangMainPanelUI gobangMainPanelUI) {
         this.gobangMainPanelUI = gobangMainPanelUI;
     }
 
@@ -20,7 +19,10 @@ public class ConsultMessage extends MessageHandler {
 
     @Override
     public void handler(String msg, Object... args) {
-        System.out.println(msg);
-        if (msg.startsWith("consult-start")) gobangMainPanelUI.start(Integer.parseInt(msg.substring("consult-start".length())));
+        /**
+         * 如果是协商开始
+         */
+        if (msg.startsWith("consult-start"))
+            gobangMainPanelUI.start(Integer.parseInt(msg.substring("consult-start".length())));
     }
 }

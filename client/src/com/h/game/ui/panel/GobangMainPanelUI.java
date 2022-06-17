@@ -16,17 +16,28 @@ import java.awt.event.MouseEvent;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 棋盘UI
+ */
 public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallback {
     public static final int CELL_NUMBER = 18;
     private static final int MARGIN = 20;
     private final Point mouseCurrentPoint = new Point();
+    //格子大小
     private int cellSize = 0;
+    //左边边据
     private int marginLeft = 0;
+    //上面边据
     private int marginTop = 0;
+    //网络管理
     private final GobangNet gobangNet;
+    //游戏状态
     private volatile int state = 0;
+    //棋盘数据
     private final int[][] cellData = new int[CELL_NUMBER + 1][CELL_NUMBER + 1];
+    //我是不是可以走
     private boolean canNext = false;
+    //先手
     private int whoFirst = 0;
     private final Image successImage = Toolkit.getDefaultToolkit().getImage(GobangMainPanelUI.class.getResource("/resource/success.png"));
     private final Image failImage = Toolkit.getDefaultToolkit().getImage(GobangMainPanelUI.class.getResource("/resource/fail.png"));
@@ -74,20 +85,27 @@ public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallbac
             again(); //如果游戏结束后还单击布局，则准备下一次对局
             return;
         }
+        //如果不轮我走，则终止
         if (!this.canNext) return;
         this.canNext = false;
         mouseCurrentPoint.setLocation(e.getX(), e.getY());
         int indexX = getNearbyIndex(e.getX(), marginLeft);
         int indexY = getNearbyIndex(e.getY(), marginTop);
         cellData[indexX][indexY] = this.whoFirst == 0 ? 1 : 2;
+        //向服务器发送我走的位置
         gobangNet.sendMessage(Message.PIECE.getMessageName() + indexX + ":" + indexY);
+        //是否游戏结束
         if (GameUtils.gameOver(this.cellData, this.whoFirst == 0 ? 1 : 2)) {
             this.state = 2;
+            //开始图片动画
             startImageAnimation();
         }
         repaint();
     }
 
+    /**
+     * 重置棋盘
+     */
     private void reset() {
         this.state = 0;
         this.canNext = false;
@@ -100,6 +118,9 @@ public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallbac
         repaint();
     }
 
+    /**
+     * 准备下一轮对局
+     */
     private void again() {
         boolean isSuccess = GameUtils.gameOver(this.cellData, this.whoFirst == 0 ? 1 : 2);
         reset(); //重置数据，布局进入等待对手状态
@@ -141,35 +162,46 @@ public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallbac
         }).start();
     }
 
+
     private int getNearbyIndex(int mouse, int direction) {
         int index = (mouse - direction) / cellSize;
         //左边一个坐标
         int left = index != 0 ? ((index) * cellSize + direction) : direction;
+        //右边一个坐标
         int right = index <= CELL_NUMBER ? (index + 1) * cellSize + direction : CELL_NUMBER * cellSize + direction;
-        return mouse - left <= right - mouse ? index : index + 1;
 
+        //比较谁近
+        return mouse - left <= right - mouse ? index : index + 1;
 
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
-        g.drawString(this.whoFirst + " ", 10, 10);
-        drawLayout(g);
-        drawState(g);
-        if (this.state == 0) return;
-        if (this.state != 2) drawMouseTarget(g); //如果游戏没有结束，则绘制鼠标所选位置
+        drawLayout(g); //绘制棋盘
+        drawState(g);  //绘制状态
+        if (this.state == 0) return; //如果游戏没开始，下面都不需要绘制
+        if (this.state != 2 && this.canNext) drawMouseTarget(g); //如果游戏没有结束并且是我走，则绘制鼠标所选位置
         drawPiece(g);   //绘制棋子
         drawImage(g);   //绘制胜利或者失败图片
     }
 
+    /**
+     * 绘制成功胜利还是失败图片
+     *
+     * @param g
+     */
     private void drawImage(Graphics g) {
         if (this.state == 2) {
             g.drawImage(GameUtils.gameOver(this.cellData, this.whoFirst == 0 ? 1 : 2) ? successImage : failImage, getWidth() / 2 - currentImageSize / 2, getHeight() / 2 - currentImageSize / 2, currentImageSize, currentImageSize, null);
         }
     }
 
+    /**
+     * 绘制状态
+     *
+     * @param g
+     */
     private void drawState(Graphics g) {
         g.setColor(Color.BLACK);
         g.setFont(tipFont);
@@ -179,6 +211,13 @@ public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallbac
             g.drawString("等待对手...", getWidth() / 2 - getFontWidth(tipFont, "等待对手...") / 2, getHeight() / 2);
     }
 
+    /**
+     * 获取字体宽度
+     *
+     * @param font
+     * @param str
+     * @return
+     */
     private int getFontWidth(Font font, String str) {
         FontDesignMetrics metrics = FontDesignMetrics.getMetrics(font);
         return metrics.stringWidth(str);
@@ -208,6 +247,7 @@ public class GobangMainPanelUI extends JPanel implements GobangPanelMoushCallbac
      * @param g
      */
     private void drawMouseTarget(Graphics g) {
+
         if (mouseCurrentPoint.x == 0 || mouseCurrentPoint.y == 0) return;
         int indexX = getNearbyIndex(mouseCurrentPoint.x, marginLeft);
         int indexY = getNearbyIndex(mouseCurrentPoint.y, marginTop);

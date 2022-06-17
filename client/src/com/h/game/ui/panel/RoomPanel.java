@@ -8,6 +8,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 
+/**
+ * 单个房间面板
+ */
 public class RoomPanel extends JPanel {
     public RoomPanel(String roomName, int state) {
         this.setLayout(new BorderLayout());
@@ -16,6 +19,7 @@ public class RoomPanel extends JPanel {
         addMouseListener(new GobangPanelMouseEvents(new GobangPanelMoushCallback() {
             @Override
             public void mouseReleased(MouseEvent e) {
+                //如果房间人数没满，则进入房间
                 if (state <= 1) new GobangMainUI(roomName);
             }
         }));

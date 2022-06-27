@@ -91,7 +91,7 @@ public class GobangServerSocket {
          * 向客户端发送房间信息
          */
         socketChannel.write(Charset.defaultCharset().encode(stringBuffer.append("rooms").append(new Gson().toJson(rooms)).toString()));
-        log.info("客户端连接成功");
+        log.info("客户端连接成功"+socketChannel.getRemoteAddress());
     }
 
     /**
